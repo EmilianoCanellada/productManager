@@ -33,11 +33,13 @@ class ProductManager {
     const existingProduct = this.products.find((p) => p.code === product.code);
 
     if (existingProduct) {
-      throw new Error("Ya existe un producto con el mismo código.");
+      console.log("Ya existe un producto con el mismo código. No se agregará duplicado.");
+      return existingProduct; // Devuelve el producto existente si ya existe
     }
 
+    //No devuelve mas un mensaje Error.,
     const newProduct = {
-      id: this.generateProductID(), // Utiliza la función para generar el ID
+      id: this.generateProductID(),
       ...product,
     };
 
@@ -59,6 +61,37 @@ class ProductManager {
     return product;
   }
 
+  //Nuevos metodos
+  updateProduct(id, updatedProduct) {
+    const productIndex = this.products.findIndex((product) => product.id === id);
+
+    if (productIndex === -1) {
+      throw new Error("Producto no encontrado.");
+    }
+
+    this.products[productIndex] = { ...this.products[productIndex], ...updatedProduct };
+    this.saveProducts();
+    return this.products[productIndex];
+  }
+
+  saveProducts() {
+    try {
+      fs.writeFileSync(this.productsPath, JSON.stringify(this.products, null, 2));
+    } catch (error) {
+      console.error("Error al guardar productos:", error.message);
+    }
+  }
+
+  deleteProduct(id) {
+    const updatedProducts = this.products.filter((product) => product.id !== id);
+  
+    if (this.products.length === updatedProducts.length) {
+      throw new Error("Producto no encontrado.");
+    }
+  
+    this.saveProducts(updatedProducts);
+  }
+
   generateProductID() {
     if (this.products.length === 0) {
       return 1;
@@ -68,7 +101,6 @@ class ProductManager {
     const maxID = Math.max(...ids);
     return maxID + 1;
   }
-
 }
 
 // Ejemplo de uso
@@ -92,10 +124,53 @@ try {
     code: "P002",
     stock: 30,
   };
-
+/*
+  const product3 = {
+    title: "Producto 3",
+    description: "Descripción del Producto 3",
+    price: 31.99,
+    thumbnail: "path/to/image3.jpg",
+    code: "P003",
+    stock: 20,
+  };
+*/
+  // Agrega los productos iniciales
   productManager.addProduct(product1);
   productManager.addProduct(product2);
+  //productManager.addProduct(product3);
+/*
+// Obtén el ID del primer producto agregado
+const productIdToUpdate = 1;
 
+// Actualiza el primer producto
+const updatedProduct = {
+  title: "Producto Actualizado",
+  description: "Descripción Actualizada",
+  price: 39.99,
+  thumbnail: "path/to/updated-image.jpg",
+  code: "P001",
+  stock: 25,
+};
+
+try {
+  const updatedProductResult = productManager.updateProduct(productIdToUpdate, updatedProduct);
+  console.log("Producto actualizado:", updatedProductResult);
+} catch (error) {
+  console.error("Error al actualizar producto:", error.message);
+}
+
+// Obtén el ID del segundo producto agregado
+//const productIdToDelete = 1;
+
+// Elimina el segundo producto
+try {
+  productManager.deleteProduct(1);
+  console.log("Producto eliminado con éxito");
+} catch (error) {
+  console.error("Error al eliminar producto:", error.message);
+}
+*/
+  // Muestra la lista de productos antes de las operaciones
   console.log("Lista de productos:", productManager.getProducts());
 
   const productIdToFind = 1;
